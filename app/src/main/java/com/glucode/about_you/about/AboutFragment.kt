@@ -27,6 +27,7 @@ class AboutFragment: Fragment() {
         setProfileCard()
         setUpQuestions()
     }
+    //test
 
     private fun setProfileCard(){
         val engineerName = arguments?.getString("name")
