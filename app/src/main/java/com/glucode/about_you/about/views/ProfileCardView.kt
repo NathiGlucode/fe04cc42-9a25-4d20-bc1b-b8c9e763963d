@@ -24,6 +24,21 @@ class ProfileCardView @JvmOverloads constructor(
             field = value
             binding.roleEngineer.text = value
         }
+    var years: String? = null
+        set(value) {
+            field = value
+            binding.Years.text = value
+        }
+    var coffees: String? = null
+        set(value) {
+            field = value
+            binding.Coffees.text = value
+        }
+    var bugs: String? = null
+        set(value) {
+            field = value
+            binding.Bugs.text = value
+        }
 
 
 

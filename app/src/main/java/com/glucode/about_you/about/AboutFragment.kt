@@ -39,7 +39,13 @@ class AboutFragment: Fragment() {
             profileView.name = engineerName
             profileView.techRole = techRole
 
-            binding.container.addView(profileView)
+            profileView.years = engineer.quickStats.years.toString()
+            profileView.coffees = engineer.quickStats.coffees.toString()
+            profileView.bugs = engineer.quickStats.bugs.toString()
+
+
+
+        binding.container.addView(profileView)
     }
 
     private fun setUpQuestions() {
