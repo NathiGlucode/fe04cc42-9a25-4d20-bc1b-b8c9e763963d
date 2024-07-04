@@ -12,6 +12,7 @@ import com.glucode.about_you.mockdata.MockData
 
 class EngineersFragment : Fragment() {
     private lateinit var binding: FragmentEngineersBinding
+    private lateinit var engineersList: MutableList<Engineer>
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -20,7 +21,8 @@ class EngineersFragment : Fragment() {
     ): View {
         binding = FragmentEngineersBinding.inflate(inflater, container, false)
         setHasOptionsMenu(true)
-        setUpEngineersList(MockData.engineers)
+        engineersList = MockData.engineers.toMutableList()
+        setUpEngineersList(engineersList)
         return binding.root
     }
 
@@ -30,8 +32,21 @@ class EngineersFragment : Fragment() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == R.id.action_years) {
-            return true
+        when (item.itemId) {
+            R.id.action_years -> {
+                setUpEngineersList(MockData.engineers.sortedBy { it.quickStats.years })
+                return true
+            }
+
+            R.id.action_coffees -> {
+                setUpEngineersList(MockData.engineers.sortedBy { it.quickStats.coffees })
+                return true
+            }
+
+            R.id.action_bugs -> {
+                setUpEngineersList(MockData.engineers.sortedBy { it.quickStats.bugs })
+                return true
+            }
         }
         return super.onOptionsItemSelected(item)
     }
@@ -40,15 +55,18 @@ class EngineersFragment : Fragment() {
         binding.list.adapter = EngineersRecyclerViewAdapter(engineers) {
             goToAbout(it)
         }
-        val dividerItemDecoration = DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL)
+        val dividerItemDecoration =
+            DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL)
         binding.list.addItemDecoration(dividerItemDecoration)
     }
 
     private fun goToAbout(engineer: Engineer) {
         val bundle = Bundle().apply {
             putString("name", engineer.name)
-            putString("role",engineer.role)
+            putString("role", engineer.role)
         }
         findNavController().navigate(R.id.action_engineersFragment_to_aboutFragment, bundle)
     }
 }
+
+
