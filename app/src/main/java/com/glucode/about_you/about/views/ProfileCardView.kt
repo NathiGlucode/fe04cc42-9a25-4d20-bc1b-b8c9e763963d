@@ -4,7 +4,9 @@ import android.content.Context
 import android.net.Uri
 import android.util.AttributeSet
 import android.view.LayoutInflater
+import android.widget.ImageView
 import androidx.cardview.widget.CardView
+import com.bumptech.glide.Glide
 import com.glucode.about_you.R
 import com.glucode.about_you.databinding.ViewProfileCardBinding
 
@@ -41,24 +43,32 @@ class ProfileCardView @JvmOverloads constructor(
             field = value
             binding.Bugs.text = value
         }
-    var profilePictureUri: Uri? = null
-        set(value) {
-            field = value
-            binding.profilePictures.setImageURI(profilePictureUri)
-
-        }
-
-    init {
-        radius = resources.getDimension(R.dimen.padding_small)
-        elevation = resources.getDimension(R.dimen.elevation_normal)
+//    var profilePictureUri: Uri? = null
+//        set(value) {
+//            field = value
+//            binding.profilePictures.setImageURI(profilePictureUri)
 
 
-        binding.profilePictures.setOnClickListener {
-         onProfilePictureClickListener?.invoke()
-        }
+    fun setImage(uri: Uri){
+        Glide.with(this)
+            .load(uri)
+            .into(binding.profilePictures)
     }
 
-    var onProfilePictureClickListener: (() -> Unit)? = null
+    val imageView: ImageView
+        get() = binding.profilePictures
+
+//    init {
+//        radius = resources.getDimension(R.dimen.padding_small)
+//        elevation = resources.getDimension(R.dimen.elevation_normal)
+//
+//
+//        binding.profilePictures.setOnClickListener {
+//         onProfilePictureClickListener?.invoke()
+//        }
+//    }
+//
+//    var onProfilePictureClickListener: (() -> Unit)? = null
 
 
 

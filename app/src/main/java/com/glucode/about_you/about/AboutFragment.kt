@@ -1,8 +1,12 @@
 package com.glucode.about_you.about
 
+import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.provider.MediaStore
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,17 +20,22 @@ import com.glucode.about_you.databinding.FragmentAboutBinding
 import com.glucode.about_you.mockdata.MockData
 
 class AboutFragment: Fragment() {
-    private lateinit var binding: FragmentAboutBinding
-    private val PREFS_NAME = "com.glucode.about_you.about.PREFS"
-    private val KEY_PROFILE_PIC_URI = "profilePicUri"
 
-    private val pickImageLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-        uri?.let {
-            saveProfilePictureUri(it)
-            val profileView = binding.container.findViewWithTag<ProfileCardView>("profileView")
-            profileView?.profilePictureUri = it
-        }
-    }
+    private lateinit var binding: FragmentAboutBinding
+    private lateinit var profileCardView: ProfileCardView
+    private val REQUEST_IMAGE_PICK = 1
+    private val REQUEST_PERMISSION_READ_EXTERNAL_STORAGE =2
+//    private val PREFS_NAME = "com.glucode.about_you.about.PREFS"
+//    private val KEY_PROFILE_PIC_URI = "profilePicUri"
+
+//    private val pickImageLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+//        uri?.let {
+//          //  saveProfilePictureUri(it)
+//            val profileView = binding.container.findViewWithTag<ProfileCardView>("profileView")
+//            profileView?.profilePictureUri = it
+//        }
+//    }
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -48,24 +57,43 @@ class AboutFragment: Fragment() {
 
         val engineerName = arguments?.getString("name")
         val role = arguments?.getString("role")
-        val engineer = MockData.engineers.first { it.name == engineerName }
+        val engineer = MockData.engineers.firstOrNull { it.name == engineerName }
 
-        val profileView = ProfileCardView(requireContext()).apply {
-            name = engineerName
-            techRole = role
-            years = engineer.quickStats.years.toString()
-            coffees = engineer.quickStats.coffees.toString()
-            bugs = engineer.quickStats.bugs.toString()
-            tag = "profileView"
-            profilePictureUri = getSavedProfilePictureUri() ?: engineer.defaultImageName
+        engineer?.let{
+            profileCardView = ProfileCardView(requireContext())
+            profileCardView.name = engineerName
+            profileCardView.techRole = role
+            profileCardView.years = it.quickStats.years.toString()
+            profileCardView.coffees = it.quickStats.coffees.toString()
+            profileCardView.bugs = it.quickStats.bugs.toString()
 
-            onProfilePictureClickListener = {
-                pickImage()
-            }
+            val defaultImageUri = it.defaultImageName
+            if (defaultImageUri != null){
+                profileCardView.setImage(defaultImageUri)
+        }
+
+
+//        val profileView = ProfileCardView(requireContext()).apply {
+//            name = engineerName
+//            techRole = role
+//            years = engineer.quickStats.years.toString()
+//            coffees = engineer.quickStats.coffees.toString()
+//            bugs = engineer.quickStats.bugs.toString()
+//            tag = "profileView"
+           // profilePictureUri = getSavedProfilePictureUri() ?: engineer.defaultImageName
+
+//            onProfilePictureClickListener = {
+//                pickImage()
+//            }
 
         }
 
-        binding.container.addView(profileView)
+        binding.container.addView(profileCardView)
+
+        profileCardView.imageView.setOnClickListener{
+            val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+            startActivityForResult(intent,REQUEST_IMAGE_PICK)
+        }
     }
 
     private fun setUpQuestions() {
@@ -82,24 +110,38 @@ class AboutFragment: Fragment() {
         }
     }
 
-
-    private fun pickImage() {
-        pickImageLauncher.launch("image/*")
-    }
-
-    private fun saveProfilePictureUri(uri: Uri) {
-        val sharedPreferences = requireActivity().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        sharedPreferences.edit {
-            putString(KEY_PROFILE_PIC_URI, uri.toString())
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_IMAGE_PICK && resultCode == Activity.RESULT_OK) {
+            val selectedImage: Uri? = data?.data
+            selectedImage?.let {
+                Log.d("AboutFragment", "Selected Image URI: $it")
+                if (::profileCardView.isInitialized) {
+                    profileCardView.setImage(it)
+                    MockData.engineers.find { it.name == arguments?.getString("name") }?.defaultImageName = it
+                    setProfileCard()
+                }
+            }
         }
-        MockData.engineers.find { it.name == arguments?.getString("name") }?.defaultImageName
     }
 
-    private fun getSavedProfilePictureUri(): Uri? {
-        val sharedPreferences = requireActivity().getSharedPreferences(PREFS_NAME, 0)
-        val uriString = sharedPreferences.getString(KEY_PROFILE_PIC_URI, null)
-        return uriString?.toUri()
-    }
+//    private fun pickImage() {
+//        pickImageLauncher.launch("image/*")
+//    }
+
+//    private fun saveProfilePictureUri(uri: Uri) {
+//        val sharedPreferences = requireActivity().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+//        sharedPreferences.edit {
+//            putString(KEY_PROFILE_PIC_URI, uri.toString())
+//        }
+//        MockData.engineers.find { it.name == arguments?.getString("name") }?.defaultImageName
+//    }
+//
+//    private fun getSavedProfilePictureUri(): Uri? {
+//        val sharedPreferences = requireActivity().getSharedPreferences(PREFS_NAME, 0)
+//        val uriString = sharedPreferences.getString(KEY_PROFILE_PIC_URI, null)
+//        return uriString?.toUri()
+//    }
 
 
 }
